@@ -41,11 +41,14 @@ return (
     {/* Logo section */}
     <div className="flex justify-center mb-4">
       <Image
-        src="/logo.png"
-        alt="Lakefront Coffee Logo"
-        width={120}
-        height={120}
-        priority
+  src="/logo.png"
+  width={160}
+  height={160}
+  alt="Lakefront Coffee"
+  priority
+  className="logo"
+/>
+
       />
     </div>
 
