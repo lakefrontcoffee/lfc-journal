@@ -35,16 +35,25 @@ export default function Home() {
   const journalCount = hasJournal ? Number(hasJournal as bigint) : 0;
   const qualified = beans > 0 || journalCount > 0;
 
-  return (
-    <main className="container">
+return (
+  <main className="container">
+
+    {/* Logo section */}
+    <div className="flex justify-center mb-4">
       <Image
-        className="logo"
-        src="https://lakefrontcoffee.com/cdn/shop/files/LFC-LOGO-VERT-100.png?v=1743911454&width=190"
-        alt="Lakefront Coffee"
-        width={160}
-        height={160}
+        src="/logo.png"
+        alt="Lakefront Coffee Logo"
+        width={120}
+        height={120}
+        priority
       />
-      <div className="card">
+    </div>
+
+    {/* Existing title section */}
+    <h1 className="text-3xl font-bold text-center mt-2">Lakefront Journal</h1>
+    <p className="text-center text-gray-600">
+      Connect to view your perks, journal, and rewards.
+    </p>
         <h1>Lakefront Journal</h1>
         <p className="muted">Connect to view your perks, journal, and rewards.</p>
         <div style={{margin:'12px 0'}}>
