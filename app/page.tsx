@@ -117,7 +117,6 @@ export default function Home() {
                 Enter Reserve
               </Link>
               <a
-               <a
   href="https://t.me/lakefrontreserve"
   className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-2 px-4 rounded-xl transition-all"
   target="_blank"
