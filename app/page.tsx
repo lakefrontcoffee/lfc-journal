@@ -122,7 +122,7 @@ export default function Home() {
                 target="_blank"
                 rel="noreferrer"
               >
-                Join Telegram
+                Join Lakefront Reserve
               </a>
             </div>
           </>
