@@ -59,7 +59,7 @@ export default function Home() {
       </p>
 
       {/* Connect */}
-      <div className="flex justify-center items-center my-6">
+      <div className="w-full flex justify-center my-6">
         <ConnectButton />
       </div>
 
