@@ -117,7 +117,7 @@ export default function Home() {
                 Enter Reserve
               </Link>
               <a
-                href="https://t.me/+uJXDSK4dY2IiZWUx"
+                href="https://t.me/lakefrontreserve"
                 className="btn"
                 target="_blank"
                 rel="noreferrer"
