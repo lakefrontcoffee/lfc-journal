@@ -59,7 +59,7 @@ export default function Home() {
       </p>
 
       {/* Connect */}
-      <div className="flex justify-center my-3">
+      <div className="flex justify-center items-center my-6">
         <ConnectButton />
       </div>
 
@@ -117,7 +117,7 @@ export default function Home() {
                 Enter Reserve
               </Link>
               <a
-                href="https://t.me/your-telegram"
+                href="https://t.me/+uJXDSK4dY2IiZWUx"
                 className="btn"
                 target="_blank"
                 rel="noreferrer"
