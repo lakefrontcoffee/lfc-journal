@@ -40,27 +40,7 @@ export default function Home() {
   const journalCount = journalBal ? Number(journalBal as bigint) : 0;
   const qualified = beans > 0 || journalCount > 0;
 
-  // ✅ Move RainbowKit modal out of Shopify containers
-  useEffect(() => {
-    const rkPortal = document.querySelector('[data-rk]');
-    if (rkPortal && !document.body.contains(rkPortal)) {
-      document.body.appendChild(rkPortal);
-    }
-  }, []);
-
-  // ✅ Prevent Shopify layout from trapping modal behind overlays
-  useEffect(() => {
-    const overlays = document.querySelectorAll(
-      '.shopify-section, .page-width, #MainContent'
-    );
-    overlays.forEach((el) => {
-      const elem = el as HTMLElement;
-      elem.style.zIndex = '1';
-      elem.style.position = 'relative';
-    });
-  }, []);
-
-  // ✅ FINAL GUARANTEED FIX — keeps modal clickable on all devices
+  // ✅ Keep RainbowKit modal on top
   useEffect(() => {
     const observer = new MutationObserver(() => {
       const rkModal = document.querySelector('[data-rk]');
@@ -69,16 +49,16 @@ export default function Home() {
           'style',
           `
             position: fixed !important;
-            z-index: 9999999 !important;
+            z-index: 999999 !important;
             inset: 0 !important;
             width: 100vw !important;
             height: 100vh !important;
             display: flex !important;
             justify-content: center !important;
             align-items: center !important;
-            pointer-events: all !important;
             background: rgba(0,0,0,0.45) !important;
             backdrop-filter: blur(6px) !important;
+            pointer-events: all !important;
           `
         );
         document.body.appendChild(rkModal);
@@ -88,78 +68,52 @@ export default function Home() {
     return () => observer.disconnect();
   }, []);
 
+  // ✅ Override Shopify container alignment
+  useEffect(() => {
+    document.querySelectorAll('.shopify-section, #MainContent').forEach((el) => {
+      const e = el as HTMLElement;
+      e.style.display = 'flex';
+      e.style.justifyContent = 'center';
+      e.style.alignItems = 'center';
+      e.style.flexDirection = 'column';
+      e.style.width = '100%';
+      e.style.overflow = 'visible';
+    });
+  }, []);
+
   return (
-    <main
-      className="flex flex-col items-center justify-center text-center px-4 py-10 bg-white text-gray-800"
-      style={{
-        width: '100%',
-        minHeight: '100vh',
-        overflow: 'visible',
-        position: 'relative',
-      }}
+    <div
+      id="lfc-wrapper"
+      className="flex flex-col items-center justify-center min-h-screen bg-white text-gray-800 text-center px-4 py-10"
     >
-      {/* Global CSS Fixes */}
       <style jsx global>{`
         html,
         body {
           overflow: visible !important;
-          width: 100% !important;
-          height: auto !important;
         }
-
-        /* RainbowKit modal absolute priority */
         [data-rk] {
-          position: fixed !important;
-          z-index: 9999999 !important;
-          inset: 0 !important;
-          width: 100vw !important;
-          height: 100vh !important;
-          display: flex !important;
-          justify-content: center !important;
-          align-items: center !important;
-          background: rgba(0, 0, 0, 0.4) !important;
-          backdrop-filter: blur(4px) !important;
-          pointer-events: all !important;
-        }
-
-        /* Shopify alignment overrides */
-        .shopify-section,
-        #MainContent,
-        .page-width {
-          display: flex !important;
-          flex-direction: column !important;
-          justify-content: center !important;
-          align-items: center !important;
-          width: 100% !important;
-          margin: 0 auto !important;
-          padding: 0 !important;
-          text-align: center !important;
-          overflow: visible !important;
+          z-index: 999999 !important;
         }
       `}</style>
 
       {/* Logo */}
-      <div className="flex justify-center mb-5">
-        <Image
-          src="/logo.png"
-          alt="Lakefront Coffee"
-          width={140}
-          height={140}
-          priority
-        />
-      </div>
+      <Image
+        src="/logo.png"
+        alt="Lakefront Coffee"
+        width={140}
+        height={140}
+        priority
+      />
 
       {/* Title */}
-      <h1 className="text-3xl font-bold mb-2">Lakefront Journal</h1>
-      <p className="text-gray-600 mb-6">
+      <h1 className="text-3xl font-bold mt-4">Lakefront Journal</h1>
+      <p className="text-gray-600 mt-1 mb-6">
         Connect to view your perks, journal, and rewards.
       </p>
 
       {/* Connect Wallet */}
       <div className="flex justify-center mb-6">
-        <div className="rounded-lg shadow-sm">
-          <ConnectButton />
-        </div>
+        <ConnectButton />
       </div>
 
       {/* Balances */}
@@ -238,6 +192,6 @@ export default function Home() {
           </p>
         )}
       </div>
-    </main>
+    </div>
   );
 }
