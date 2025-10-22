@@ -7,7 +7,7 @@ import { useAccount, useReadContract } from 'wagmi';
 import { base } from 'viem/chains';
 import { formatUnits } from 'viem';
 import { BEANS_ADDRESS, JOURNAL_ADDRESS, erc20Abi, erc721Abi } from '@/lib/contracts';
-
+import { useEffect } from 'react';
 export default function Home() {
   const { address, chainId } = useAccount();
   const onBase = chainId === base.id;
@@ -33,7 +33,13 @@ export default function Home() {
   const beans = beansBal ? Number(formatUnits(beansBal as bigint, 18)) : 0;
   const journalCount = journalBal ? Number(journalBal as bigint) : 0;
   const qualified = beans > 0 || journalCount > 0;
-
+  // Move RainbowKit modal to body root to avoid Shopify overflow issues
+  useEffect(() => {
+    const rkPortal = document.querySelector('[data-rk]');
+    if (rkPortal && !document.body.contains(rkPortal)) {
+      document.body.appendChild(rkPortal);
+    }
+  }, []);
   return (
     <main
       className="flex flex-col justify-center items-center min-h-screen px-6 py-10 text-center text-gray-800 bg-white"
