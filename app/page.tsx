@@ -40,7 +40,7 @@ export default function Home() {
   const journalCount = journalBal ? Number(journalBal as bigint) : 0;
   const qualified = beans > 0 || journalCount > 0;
 
-  // ✅ Make modal clickable on Shopify
+  // ✅ Move RainbowKit modal out of Shopify containers
   useEffect(() => {
     const rkPortal = document.querySelector('[data-rk]');
     if (rkPortal && !document.body.contains(rkPortal)) {
@@ -48,13 +48,44 @@ export default function Home() {
     }
   }, []);
 
-  // ✅ Ensure Shopify overlay doesn’t block clicks
+  // ✅ Prevent Shopify layout from trapping modal behind overlays
   useEffect(() => {
-    const overlays = document.querySelectorAll('.shopify-section, .page-width, #MainContent');
+    const overlays = document.querySelectorAll(
+      '.shopify-section, .page-width, #MainContent'
+    );
     overlays.forEach((el) => {
-      (el as HTMLElement).style.zIndex = '1';
-      (el as HTMLElement).style.position = 'relative';
+      const elem = el as HTMLElement;
+      elem.style.zIndex = '1';
+      elem.style.position = 'relative';
     });
+  }, []);
+
+  // ✅ FINAL GUARANTEED FIX — keeps modal clickable on all devices
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const rkModal = document.querySelector('[data-rk]');
+      if (rkModal) {
+        rkModal.setAttribute(
+          'style',
+          `
+            position: fixed !important;
+            z-index: 9999999 !important;
+            inset: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            pointer-events: all !important;
+            background: rgba(0,0,0,0.45) !important;
+            backdrop-filter: blur(6px) !important;
+          `
+        );
+        document.body.appendChild(rkModal);
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
   }, []);
 
   return (
@@ -67,6 +98,7 @@ export default function Home() {
         position: 'relative',
       }}
     >
+      {/* Global CSS Fixes */}
       <style jsx global>{`
         html,
         body {
@@ -75,7 +107,7 @@ export default function Home() {
           height: auto !important;
         }
 
-        /* ✅ RainbowKit modal always on top */
+        /* RainbowKit modal absolute priority */
         [data-rk] {
           position: fixed !important;
           z-index: 9999999 !important;
@@ -85,12 +117,12 @@ export default function Home() {
           display: flex !important;
           justify-content: center !important;
           align-items: center !important;
-          background: rgba(0, 0, 0, 0.45) !important;
-          backdrop-filter: blur(6px) !important;
+          background: rgba(0, 0, 0, 0.4) !important;
+          backdrop-filter: blur(4px) !important;
           pointer-events: all !important;
         }
 
-        /* ✅ Center inside Shopify containers */
+        /* Shopify alignment overrides */
         .shopify-section,
         #MainContent,
         .page-width {
@@ -99,7 +131,6 @@ export default function Home() {
           justify-content: center !important;
           align-items: center !important;
           width: 100% !important;
-          max-width: 100% !important;
           margin: 0 auto !important;
           padding: 0 !important;
           text-align: center !important;
@@ -143,6 +174,7 @@ export default function Home() {
         </div>
       )}
 
+      {/* Access Logic */}
       <div className="max-w-md w-full">
         {!address && (
           <p className="text-gray-600">Use the button above to connect.</p>
