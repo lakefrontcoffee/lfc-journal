@@ -40,30 +40,40 @@ export default function Home() {
   const journalCount = journalBal ? Number(journalBal as bigint) : 0;
   const qualified = beans > 0 || journalCount > 0;
 
-  // ✅ Move RainbowKit modal to root so Shopify can’t clip it
+  // 🩵 FIX 1: move modal safely to body
   useEffect(() => {
-    const rkPortal = document.querySelector('[data-rk]');
-    if (rkPortal && !document.body.contains(rkPortal)) {
-      document.body.appendChild(rkPortal);
-    }
+    const moveModal = () => {
+      const modal = document.querySelector('[data-rk]');
+      if (modal && !document.body.contains(modal)) {
+        document.body.appendChild(modal);
+      }
+    };
+    moveModal();
+    const obs = new MutationObserver(moveModal);
+    obs.observe(document.body, { childList: true, subtree: true });
+    return () => obs.disconnect();
   }, []);
 
-  // ✅ Global style patch for Shopify
+  // 🩵 FIX 2: reset Shopify overlays
   useEffect(() => {
-    const els = document.querySelectorAll('.shopify-section, #MainContent');
-    els.forEach((el) => {
+    const targets = document.querySelectorAll('header, .shopify-section, #MainContent');
+    targets.forEach((el) => {
       const e = el as HTMLElement;
+      e.style.zIndex = '1';
+      e.style.pointerEvents = 'auto';
       e.style.overflow = 'visible';
+      e.style.position = 'relative';
       e.style.transform = 'none';
     });
   }, []);
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-white text-gray-800 text-center px-6 py-12">
+    <main className="min-h-screen flex flex-col items-center justify-center bg-white text-gray-800 text-center px-6 py-12 relative">
       <style jsx global>{`
         html,
         body {
           overflow: visible !important;
+          position: relative !important;
         }
         [data-rk] {
           position: fixed !important;
@@ -72,8 +82,14 @@ export default function Home() {
           display: flex !important;
           justify-content: center !important;
           align-items: center !important;
-          background: rgba(0, 0, 0, 0.45) !important;
-          backdrop-filter: blur(6px) !important;
+          background: rgba(0, 0, 0, 0.4) !important;
+          backdrop-filter: blur(5px) !important;
+          pointer-events: all !important;
+        }
+        #MainContent,
+        .shopify-section {
+          z-index: 1 !important;
+          pointer-events: auto !important;
         }
       `}</style>
 
@@ -88,12 +104,12 @@ export default function Home() {
 
       {/* Title */}
       <h1 className="text-3xl font-bold mt-4">Lakefront Journal</h1>
-      <p className="text-gray-600 mt-1 mb-6">
+      <p className="text-gray-600 mt-1 mb-8 text-base max-w-sm">
         Connect to view your perks, journal, and rewards.
       </p>
 
-      {/* Connect Wallet */}
-      <div className="flex justify-center mb-6">
+      {/* Wallet Button */}
+      <div className="flex justify-center mb-6 z-50">
         <ConnectButton />
       </div>
 
