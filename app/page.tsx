@@ -40,32 +40,29 @@ export default function Home() {
   const journalCount = journalBal ? Number(journalBal as bigint) : 0;
   const qualified = beans > 0 || journalCount > 0;
 
-  // ✅ Keep RainbowKit modal on top
+  // ✅ Safe fix: handle RainbowKit modal once it's mounted
   useEffect(() => {
-    const observer = new MutationObserver(() => {
-      const rkModal = document.querySelector('[data-rk]');
+    const handleModal = () => {
+      const rkModal = document.querySelector('[data-rk]') as HTMLElement | null;
       if (rkModal) {
-        rkModal.setAttribute(
-          'style',
-          `
-            position: fixed !important;
-            z-index: 999999 !important;
-            inset: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            display: flex !important;
-            justify-content: center !important;
-            align-items: center !important;
-            background: rgba(0,0,0,0.45) !important;
-            backdrop-filter: blur(6px) !important;
-            pointer-events: all !important;
-          `
-        );
+        rkModal.style.position = 'fixed';
+        rkModal.style.zIndex = '999999';
+        rkModal.style.inset = '0';
+        rkModal.style.width = '100vw';
+        rkModal.style.height = '100vh';
+        rkModal.style.display = 'flex';
+        rkModal.style.justifyContent = 'center';
+        rkModal.style.alignItems = 'center';
+        rkModal.style.background = 'rgba(0,0,0,0.45)';
+        rkModal.style.backdropFilter = 'blur(6px)';
+        rkModal.style.pointerEvents = 'all';
         document.body.appendChild(rkModal);
       }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-    return () => observer.disconnect();
+    };
+
+    const interval = setInterval(handleModal, 500);
+    setTimeout(() => clearInterval(interval), 4000); // stop checking after 4s
+    return () => clearInterval(interval);
   }, []);
 
   // ✅ Override Shopify container alignment
