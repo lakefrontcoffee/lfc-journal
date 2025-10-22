@@ -40,12 +40,21 @@ export default function Home() {
   const journalCount = journalBal ? Number(journalBal as bigint) : 0;
   const qualified = beans > 0 || journalCount > 0;
 
-  // ✅ Fix: move RainbowKit modal outside Shopify wrappers
+  // ✅ Make modal clickable on Shopify
   useEffect(() => {
     const rkPortal = document.querySelector('[data-rk]');
     if (rkPortal && !document.body.contains(rkPortal)) {
       document.body.appendChild(rkPortal);
     }
+  }, []);
+
+  // ✅ Ensure Shopify overlay doesn’t block clicks
+  useEffect(() => {
+    const overlays = document.querySelectorAll('.shopify-section, .page-width, #MainContent');
+    overlays.forEach((el) => {
+      (el as HTMLElement).style.zIndex = '1';
+      (el as HTMLElement).style.position = 'relative';
+    });
   }, []);
 
   return (
@@ -54,38 +63,37 @@ export default function Home() {
       style={{
         width: '100%',
         minHeight: '100vh',
-        maxWidth: '100%',
         overflow: 'visible',
         position: 'relative',
       }}
     >
-      {/* ✅ Global layout + modal fixes */}
       <style jsx global>{`
         html,
         body {
           overflow: visible !important;
           width: 100% !important;
+          height: auto !important;
         }
 
-        /* RainbowKit modal fix */
+        /* ✅ RainbowKit modal always on top */
         [data-rk] {
           position: fixed !important;
-          z-index: 999999 !important;
-          top: 0 !important;
-          left: 0 !important;
+          z-index: 9999999 !important;
+          inset: 0 !important;
           width: 100vw !important;
           height: 100vh !important;
           display: flex !important;
           justify-content: center !important;
           align-items: center !important;
-          background: rgba(0, 0, 0, 0.4) !important;
-          backdrop-filter: blur(4px) !important;
+          background: rgba(0, 0, 0, 0.45) !important;
+          backdrop-filter: blur(6px) !important;
+          pointer-events: all !important;
         }
 
-        /* ✅ Shopify container alignment fix */
-        .page-width,
+        /* ✅ Center inside Shopify containers */
         .shopify-section,
-        #MainContent {
+        #MainContent,
+        .page-width {
           display: flex !important;
           flex-direction: column !important;
           justify-content: center !important;
@@ -96,7 +104,6 @@ export default function Home() {
           padding: 0 !important;
           text-align: center !important;
           overflow: visible !important;
-          transform: none !important;
         }
       `}</style>
 
@@ -105,14 +112,14 @@ export default function Home() {
         <Image
           src="/logo.png"
           alt="Lakefront Coffee"
-          width={160}
-          height={160}
+          width={140}
+          height={140}
           priority
         />
       </div>
 
       {/* Title */}
-      <h1 className="text-3xl font-bold mb-1">Lakefront Journal</h1>
+      <h1 className="text-3xl font-bold mb-2">Lakefront Journal</h1>
       <p className="text-gray-600 mb-6">
         Connect to view your perks, journal, and rewards.
       </p>
@@ -136,7 +143,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* Access Logic */}
       <div className="max-w-md w-full">
         {!address && (
           <p className="text-gray-600">Use the button above to connect.</p>
