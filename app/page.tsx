@@ -6,8 +6,14 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount, useReadContract } from 'wagmi';
 import { base } from 'viem/chains';
 import { formatUnits } from 'viem';
-import { BEANS_ADDRESS, JOURNAL_ADDRESS, erc20Abi, erc721Abi } from '@/lib/contracts';
 import { useEffect } from 'react';
+import {
+  BEANS_ADDRESS,
+  JOURNAL_ADDRESS,
+  erc20Abi,
+  erc721Abi,
+} from '@/lib/contracts';
+
 export default function Home() {
   const { address, chainId } = useAccount();
   const onBase = chainId === base.id;
@@ -33,30 +39,35 @@ export default function Home() {
   const beans = beansBal ? Number(formatUnits(beansBal as bigint, 18)) : 0;
   const journalCount = journalBal ? Number(journalBal as bigint) : 0;
   const qualified = beans > 0 || journalCount > 0;
-  // Move RainbowKit modal to body root to avoid Shopify overflow issues
+
+  // ✅ Fix: move RainbowKit modal outside Shopify wrappers
   useEffect(() => {
     const rkPortal = document.querySelector('[data-rk]');
     if (rkPortal && !document.body.contains(rkPortal)) {
       document.body.appendChild(rkPortal);
     }
   }, []);
+
   return (
     <main
-      className="flex flex-col justify-center items-center min-h-screen px-6 py-10 text-center text-gray-800 bg-white"
+      className="flex flex-col items-center justify-center text-center px-4 py-10 bg-white text-gray-800"
       style={{
         width: '100%',
+        minHeight: '100vh',
         maxWidth: '100%',
         overflow: 'visible',
         position: 'relative',
       }}
     >
-      {/* FIX for modal & Shopify overrides */}
+      {/* ✅ Global layout + modal fixes */}
       <style jsx global>{`
         html,
         body {
           overflow: visible !important;
           width: 100% !important;
         }
+
+        /* RainbowKit modal fix */
         [data-rk] {
           position: fixed !important;
           z-index: 999999 !important;
@@ -70,8 +81,20 @@ export default function Home() {
           background: rgba(0, 0, 0, 0.4) !important;
           backdrop-filter: blur(4px) !important;
         }
-        #MainContent,
-        .shopify-section {
+
+        /* ✅ Shopify container alignment fix */
+        .page-width,
+        .shopify-section,
+        #MainContent {
+          display: flex !important;
+          flex-direction: column !important;
+          justify-content: center !important;
+          align-items: center !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          margin: 0 auto !important;
+          padding: 0 !important;
+          text-align: center !important;
           overflow: visible !important;
           transform: none !important;
         }
@@ -88,6 +111,7 @@ export default function Home() {
         />
       </div>
 
+      {/* Title */}
       <h1 className="text-3xl font-bold mb-1">Lakefront Journal</h1>
       <p className="text-gray-600 mb-6">
         Connect to view your perks, journal, and rewards.
@@ -112,11 +136,10 @@ export default function Home() {
         </div>
       )}
 
+      {/* Access Logic */}
       <div className="max-w-md w-full">
         {!address && (
-          <p className="text-gray-600">
-            Use the button above to connect.
-          </p>
+          <p className="text-gray-600">Use the button above to connect.</p>
         )}
 
         {address && !qualified && (
