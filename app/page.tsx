@@ -35,20 +35,44 @@ export default function Home() {
   const qualified = beans > 0 || journalCount > 0;
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-4 py-10 bg-white text-gray-800 text-center relative overflow-visible">
-      {/* Global modal fix */}
+    <main
+      className="flex flex-col justify-center items-center min-h-screen px-6 py-10 text-center text-gray-800 bg-white"
+      style={{
+        width: '100%',
+        maxWidth: '100%',
+        overflow: 'visible',
+        position: 'relative',
+      }}
+    >
+      {/* FIX for modal & Shopify overrides */}
       <style jsx global>{`
-        [data-rk] {
-          position: relative !important;
-          z-index: 9999 !important;
-        }
+        html,
         body {
           overflow: visible !important;
+          width: 100% !important;
+        }
+        [data-rk] {
+          position: fixed !important;
+          z-index: 999999 !important;
+          top: 0 !important;
+          left: 0 !important;
+          width: 100vw !important;
+          height: 100vh !important;
+          display: flex !important;
+          justify-content: center !important;
+          align-items: center !important;
+          background: rgba(0, 0, 0, 0.4) !important;
+          backdrop-filter: blur(4px) !important;
+        }
+        #MainContent,
+        .shopify-section {
+          overflow: visible !important;
+          transform: none !important;
         }
       `}</style>
 
       {/* Logo */}
-      <div className="mb-5">
+      <div className="flex justify-center mb-5">
         <Image
           src="/logo.png"
           alt="Lakefront Coffee"
@@ -58,20 +82,19 @@ export default function Home() {
         />
       </div>
 
-      {/* Title + subtitle */}
       <h1 className="text-3xl font-bold mb-1">Lakefront Journal</h1>
       <p className="text-gray-600 mb-6">
         Connect to view your perks, journal, and rewards.
       </p>
 
-      {/* Connect Button */}
+      {/* Connect Wallet */}
       <div className="flex justify-center mb-6">
         <div className="rounded-lg shadow-sm">
           <ConnectButton />
         </div>
       </div>
 
-      {/* Balance & journal status */}
+      {/* Balances */}
       {address && (
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6">
           <span className="rounded-full bg-gray-100 px-4 py-2 font-medium text-sm">
@@ -83,7 +106,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* Conditional logic */}
       <div className="max-w-md w-full">
         {!address && (
           <p className="text-gray-600">
@@ -102,7 +124,7 @@ export default function Home() {
                 href="https://your-journal-mint-link"
                 target="_blank"
                 rel="noreferrer"
-                className="bg-black text-white py-2 px-6 rounded-full font-medium hover:bg-gray-800 transition-all"
+                className="bg-[#4B2E05] text-white py-2 px-6 rounded-full font-medium hover:bg-[#3c2504] transition-all"
               >
                 Get the Journal
               </a>
@@ -110,7 +132,7 @@ export default function Home() {
                 href="https://your-beans-info-link"
                 target="_blank"
                 rel="noreferrer"
-                className="bg-yellow-600 text-white py-2 px-6 rounded-full font-medium hover:bg-yellow-700 transition-all"
+                className="bg-[#D4A857] text-white py-2 px-6 rounded-full font-medium hover:bg-[#c99746] transition-all"
               >
                 About $BEANS
               </a>
@@ -127,7 +149,7 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link
                 href="https://lakefrontcoffee.com/pages/reserve"
-                className="bg-black text-white py-2 px-6 rounded-full font-medium hover:bg-gray-800 transition-all"
+                className="bg-[#4B2E05] text-white py-2 px-6 rounded-full font-medium hover:bg-[#3c2504] transition-all"
               >
                 Enter Reserve
               </Link>
@@ -135,7 +157,7 @@ export default function Home() {
                 href="https://t.me/lakefrontreserve"
                 target="_blank"
                 rel="noreferrer"
-                className="bg-yellow-600 text-white py-2 px-6 rounded-full font-medium hover:bg-yellow-700 transition-all"
+                className="bg-[#D4A857] text-white py-2 px-6 rounded-full font-medium hover:bg-[#c99746] transition-all"
               >
                 Join Lakefront Reserve
               </a>
