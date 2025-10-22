@@ -38,67 +38,125 @@ export default function Home() {
   const journalCount = journalBal ? Number(journalBal as bigint) : 0;
   const qualified = beans > 0 || journalCount > 0;
 
-  // 🩶 Move RainbowKit modal above Shopify wrappers & unlock clicks
+  // Enhanced fix for RainbowKit modal to ensure wallet options are clickable
+  // and improve UX by properly handling pointer events and positioning
   useEffect(() => {
     const fixModal = () => {
-      const rk = document.querySelector('[data-rk]');
-      if (rk) {
-        rk.setAttribute(
+      const overlay = document.querySelector('[data-rk]');
+      if (overlay) {
+        // Reposition overlay to cover full viewport
+        overlay.setAttribute(
           'style',
           `
-          position: fixed !important;
-          top: 0 !important;
-          left: 0 !important;
-          width: 100vw !important;
-          height: 100vh !important;
-          z-index: 999999999 !important;
-          background: rgba(0,0,0,0.45) !important;
-          backdrop-filter: blur(6px) !important;
-          display: flex !important;
-          justify-content: center !important;
-          align-items: center !important;
-          pointer-events: all !important;
-        `
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 999999999 !important;
+            background: rgba(0,0,0,0.45) !important;
+            backdrop-filter: blur(6px) !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            pointer-events: none !important; /* Allow clicks to pass through to content */
+          `
         );
-        document.body.appendChild(rk);
 
-        // Disable Shopify pointer blocks while modal open
-        document
-          .querySelectorAll('header, .shopify-section, #MainContent')
-          .forEach((el) => {
-            const e = el as HTMLElement;
-            e.style.pointerEvents = 'none';
+        // Append to body to avoid stacking context issues
+        if (overlay.parentNode !== document.body) {
+          document.body.appendChild(overlay);
+        }
+
+        // Target the modal content/dialog and make it fully interactive
+        const content = overlay.querySelector('[data-rk-modal], [role="dialog"], .rk-modal-container');
+        if (content) {
+          content.setAttribute(
+            'style',
+            `
+              pointer-events: all !important;
+              z-index: 999999999 !important;
+              position: relative !important;
+            `
+          );
+
+          // Ensure buttons inside are clickable
+          const buttons = content.querySelectorAll('button, [role="button"]');
+          buttons.forEach((btn) => {
+            btn.style.pointerEvents = 'all !important';
+            btn.style.zIndex = '999999999 !important';
           });
+        }
+
+        // Disable pointer events on Shopify elements to prevent interference
+        const shopifySelectors = 'header, .shopify-section, #MainContent, .shopify-payment-button, iframe';
+        document.querySelectorAll(shopifySelectors).forEach((el) => {
+          const element = el as HTMLElement;
+          element.style.pointerEvents = 'none';
+          element.style.position = 'relative';
+          element.style.zIndex = '1';
+        });
+
+        // Prevent body scroll
+        document.body.style.overflow = 'hidden';
       }
     };
 
     const reset = () => {
-      document
-        .querySelectorAll('header, .shopify-section, #MainContent')
-        .forEach((el) => {
-          const e = el as HTMLElement;
-          e.style.pointerEvents = 'auto';
-        });
+      // Re-enable pointer events on Shopify elements
+      const shopifySelectors = 'header, .shopify-section, #MainContent, .shopify-payment-button, iframe';
+      document.querySelectorAll(shopifySelectors).forEach((el) => {
+        const element = el as HTMLElement;
+        element.style.pointerEvents = 'auto';
+        element.style.zIndex = '';
+      });
+
+      // Restore body scroll
+      document.body.style.overflow = '';
     };
 
+    // Observe for modal changes
     const observer = new MutationObserver((mutations) => {
-      const modalOpen = !!document.querySelector('[data-rk]');
-      if (modalOpen) fixModal();
-      else reset();
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList') {
+          const hasModal = !!document.querySelector('[data-rk]');
+          if (hasModal) {
+            // Small delay to ensure modal is fully rendered
+            setTimeout(fixModal, 100);
+          } else {
+            reset();
+          }
+        }
+      });
     });
 
-    observer.observe(document.body, { childList: true, subtree: true });
-    return () => observer.disconnect();
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+
+    // Initial check
+    if (document.querySelector('[data-rk]')) {
+      fixModal();
+    }
+
+    return () => {
+      observer.disconnect();
+      reset();
+    };
   }, []);
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-white text-gray-800 text-center px-6 py-12">
+    <main className="min-h-screen flex flex-col items-center justify-center bg-gray-100 text-gray-800 text-center px-6 py-12">
       <style jsx global>{`
         html,
         body {
           overflow: visible !important;
         }
         [data-rk] {
+          pointer-events: none !important;
+        }
+        [data-rk-modal], [role="dialog"], .rk-modal-container {
+          pointer-events: all !important;
+        }
+        [data-rk] button, [data-rk] [role="button"] {
           pointer-events: all !important;
         }
       `}</style>
@@ -110,53 +168,120 @@ export default function Home() {
         width={140}
         height={140}
         priority
+        className="mb-4"
       />
 
-      <h1 className="text-3xl font-bold mt-4">Lakefront Journal</h1>
-      <p className="text-gray-600 mt-1 mb-8 text-base max-w-sm">
+      <h1 className="text-3xl font-bold mt-4 mb-2">Lakefront Journal</h1>
+      <p className="text-gray-600 mb-8 text-base max-w-sm">
         Connect to view your perks, journal, and rewards.
       </p>
 
-      <div className="flex justify-center mb-6">
-        <ConnectButton />
+      {/* Custom styled Connect Button wrapper for better UX */}
+      <div className="flex justify-center mb-6 w-full max-w-xs">
+        <ConnectButton.Custom>
+          {({
+            account,
+            chain,
+            openAccountModal,
+            openChainModal,
+            openConnectModal,
+            authenticationStatus,
+            mounted,
+          }) => {
+            const ready = mounted && authenticationStatus !== 'loading';
+            const connected =
+              ready &&
+              account &&
+              chain &&
+              (!authenticationStatus || authenticationStatus === 'authenticated');
+
+            return (
+              <div
+                {...(!ready && {
+                  'aria-hidden': true,
+                  style: {
+                    opacity: 0,
+                    pointerEvents: 'none',
+                    userSelect: 'none',
+                  },
+                })}
+              >
+                {(() => {
+                  if (!connected) {
+                    return (
+                      <button
+                        onClick={openConnectModal}
+                        type="button"
+                        className="w-full bg-[#4B2E05] hover:bg-[#3c2504] text-white py-3 px-6 rounded-full font-medium transition-all text-base shadow-lg"
+                      >
+                        Connect Wallet
+                      </button>
+                    );
+                  }
+                  if (chain.unsupported) {
+                    return (
+                      <button onClick={openChainModal} type="button">
+                        Wrong network
+                      </button>
+                    );
+                  }
+                  return (
+                    <>
+                      <button
+                        onClick={openChainModal}
+                        type="button"
+                        style={{ display: 'none' }}
+                      >
+                        Open chain modal
+                      </button>
+                      <button onClick={openAccountModal} type="button">
+                        {account.displayName}
+                      </button>
+                    </>
+                  );
+                })()}
+              </div>
+            );
+          }}
+        </ConnectButton.Custom>
       </div>
 
       {address && (
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6">
-          <span className="rounded-full bg-gray-100 px-4 py-2 font-medium text-sm">
+          <span className="rounded-full bg-gray-200 px-4 py-2 font-medium text-sm">
             <strong>$BEANS:</strong> {beans.toLocaleString()}
           </span>
-          <span className="rounded-full bg-gray-100 px-4 py-2 font-medium text-sm">
+          <span className="rounded-full bg-gray-200 px-4 py-2 font-medium text-sm">
             <strong>Journals:</strong> {journalCount}
           </span>
         </div>
       )}
 
-      <div className="max-w-md w-full">
+      <div className="max-w-md w-full bg-white rounded-lg p-6 shadow-md">
         {!address && (
           <p className="text-gray-600">Use the button above to connect.</p>
         )}
 
         {address && !qualified && (
           <div className="mt-4">
-            <h2 className="text-xl font-semibold">Almost there</h2>
-            <p className="text-gray-600 mt-1 mb-5">
+            <h2 className="text-xl font-semibold mb-2">Almost there</h2>
+            <p className="text-gray-600 mb-5">
               You’ll unlock access by holding a Journal or a few $BEANS.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <a
-                href="https://your-journal-mint-link"
+                href="https://lakefrontcoffee.com/pages/reserve"
                 target="_blank"
                 rel="noreferrer"
-                className="bg-[#4B2E05] text-white py-2 px-6 rounded-full font-medium hover:bg-[#3c2504] transition-all"
+                className="bg-[#4B2E05] text-white py-2 px-6 rounded-full font-medium hover:bg-[#3c2504] transition-all text-center"
               >
                 Get the Journal
               </a>
               <a
-                href="https://your-beans-info-link"
+                href="https://lakefrontcoffee.com/pages/beans-loyalty-program"
                 target="_blank"
                 rel="noreferrer"
-                className="bg-[#D4A857] text-white py-2 px-6 rounded-full font-medium hover:bg-[#c99746] transition-all"
+                className="bg-[#D4A857] text-white py-2 px-6 rounded-full font-medium hover:bg-[#c99746] transition-all text-center"
               >
                 About $BEANS
               </a>
@@ -166,14 +291,14 @@ export default function Home() {
 
         {address && qualified && (
           <div className="mt-4">
-            <h2 className="text-xl font-semibold">Welcome in 👋</h2>
-            <p className="text-gray-600 mt-1 mb-5">
+            <h2 className="text-xl font-semibold mb-2">Welcome in 👋</h2>
+            <p className="text-gray-600 mb-5">
               Head to the Reserve, join the community, and start your ritual.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link
                 href="https://lakefrontcoffee.com/pages/reserve"
-                className="bg-[#4B2E05] text-white py-2 px-6 rounded-full font-medium hover:bg-[#3c2504] transition-all"
+                className="bg-[#4B2E05] text-white py-2 px-6 rounded-full font-medium hover:bg-[#3c2504] transition-all text-center"
               >
                 Enter Reserve
               </Link>
@@ -181,7 +306,7 @@ export default function Home() {
                 href="https://t.me/lakefrontreserve"
                 target="_blank"
                 rel="noreferrer"
-                className="bg-[#D4A857] text-white py-2 px-6 rounded-full font-medium hover:bg-[#c99746] transition-all"
+                className="bg-[#D4A857] text-white py-2 px-6 rounded-full font-medium hover:bg-[#c99746] transition-all text-center"
               >
                 Join Lakefront Reserve
               </a>
