@@ -4,7 +4,34 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useEffect } from 'react';
 
 export default function ReserveJournal() {
-  // 🩵 Fix RainbowKit modal z-index and click/tap layers
+  // 🧩 Step 1: Force kill Shopify + Tidio overlays that block clicks
+  useEffect(() => {
+    const fixOverlays = () => {
+      // Remove or hide Tidio chat bubbles/iframes completely
+      const tidioEls = document.querySelectorAll(
+        '#tidio-chat, iframe[src*="tidio"], div[id*="tidio-chat"]'
+      );
+      tidioEls.forEach((el) => {
+        (el as HTMLElement).style.display = 'none';
+        (el as HTMLElement).style.pointerEvents = 'none';
+      });
+
+      // Neutralize Shopify theme wrappers that block the modal
+      document.querySelectorAll('header, footer, .shopify-section, #MainContent').forEach((el) => {
+        const e = el as HTMLElement;
+        e.style.pointerEvents = 'none';
+        e.style.overflow = 'visible';
+        e.style.zIndex = '0';
+      });
+    };
+
+    // Run once + periodically reapply (Shopify re-renders sections)
+    fixOverlays();
+    const interval = setInterval(fixOverlays, 1500);
+    return () => clearInterval(interval);
+  }, []);
+
+  // 🧩 Step 2: Force the RainbowKit modal above everything
   useEffect(() => {
     const fixModal = () => {
       const modal = document.querySelector('[data-rk]');
@@ -18,31 +45,16 @@ export default function ReserveJournal() {
         m.style.pointerEvents = 'all';
         m.style.background = 'rgba(0,0,0,0.45)';
         m.style.backdropFilter = 'blur(6px)';
+        m.style.display = 'flex';
+        m.style.justifyContent = 'center';
+        m.style.alignItems = 'center';
       }
     };
+
     fixModal();
     const obs = new MutationObserver(fixModal);
     obs.observe(document.body, { childList: true, subtree: true });
     return () => obs.disconnect();
-  }, []);
-
-  // 🩵 Neutralize Shopify & Tidio layers so modal can receive clicks
-  useEffect(() => {
-    const disableBlockers = () => {
-      // Shopify sections
-      document.querySelectorAll('.shopify-section, header, #MainContent').forEach((el) => {
-        const e = el as HTMLElement;
-        e.style.pointerEvents = 'none';
-      });
-
-      // Tidio chat bubble
-      const tidio = document.querySelector('#tidio-chat, iframe[src*="tidio"]');
-      if (tidio) (tidio as HTMLElement).style.display = 'none';
-    };
-
-    disableBlockers();
-    const interval = setInterval(disableBlockers, 1000); // reapply if Shopify reloads layout
-    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -58,29 +70,44 @@ export default function ReserveJournal() {
         backgroundColor: '#fafafa',
         color: '#222',
         padding: '3rem 1rem',
+        position: 'relative',
+        zIndex: 1,
       }}
     >
-      <h1
+      {/* ✅ Center “Reserve Journal” title (Shopify wrapper safe) */}
+      <div
         style={{
-          fontSize: '2rem',
-          fontWeight: '700',
-          marginBottom: '1rem',
-          textAlign: 'center',
+          position: 'absolute',
+          top: '1rem',
+          left: '50%',
+          transform: 'translateX(-50%)',
           width: '100%',
+          textAlign: 'center',
+          zIndex: 2,
         }}
       >
-        ☕ Lakefront Journal Wallet Test
-      </h1>
+        <h1
+          style={{
+            fontSize: '2rem',
+            fontWeight: '700',
+            marginBottom: '1rem',
+            textAlign: 'center',
+          }}
+        >
+          ☕ Lakefront Journal Wallet Test
+        </h1>
+      </div>
 
       <p
         style={{
+          marginTop: '5rem',
           marginBottom: '1.5rem',
           fontSize: '1rem',
           lineHeight: '1.5',
           maxWidth: '340px',
         }}
       >
-        Tap <b>Connect Wallet</b> below. You should now be able to open and tap any wallet option freely.
+        If you can open and tap a wallet option below, everything’s fixed.
       </p>
 
       <div
@@ -102,12 +129,16 @@ export default function ReserveJournal() {
         body {
           overflow: visible !important;
         }
+        #tidio-chat,
+        iframe[src*='tidio'] {
+          display: none !important;
+          pointer-events: none !important;
+        }
         h1,
         h2,
         h3 {
           text-align: center !important;
-          margin-left: auto !important;
-          margin-right: auto !important;
+          margin: 0 auto !important;
         }
       `}</style>
     </main>
