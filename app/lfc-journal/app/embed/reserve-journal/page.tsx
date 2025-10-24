@@ -2,7 +2,7 @@
 
 import { WagmiConfig } from 'wagmi';
 import { RainbowKitProvider, ConnectButton } from '@rainbow-me/rainbowkit';
-import { config } from '@/lib/wagmi'; // path to your wagmi config file
+import { config } from '../../../lib/wagmi';
 import { base } from 'viem/chains';
 
 export default function ReserveJournalEmbed() {
