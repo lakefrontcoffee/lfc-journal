@@ -1,20 +1,17 @@
 'use client';
 
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
-import { http, createConfig } from 'wagmi';
+import { createConfig, http } from 'wagmi';
 import { base } from 'wagmi/chains';
 
-// 🔹 Replace this with your actual WalletConnect Project ID (or leave as test)
-const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_ID || 'example-walletconnect-id';
-
-// 🧠 Creates Wagmi + RainbowKit config for Base chain
-export const config = createConfig(
-  getDefaultConfig({
+export const config = createConfig({
+  chains: [base],
+  transports: {
+    [base.id]: http(),
+  },
+  ssr: true,
+  ...getDefaultConfig({
     appName: 'Lakefront Journal',
-    projectId,
-    chains: [base],
-    transports: {
-      [base.id]: http(),
-    },
-  })
-);
+    projectId: 'YOUR_WALLETCONNECT_PROJECT_ID',
+  }),
+});
