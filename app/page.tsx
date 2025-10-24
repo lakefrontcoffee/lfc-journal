@@ -4,7 +4,7 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useEffect } from 'react';
 
 export default function ReserveJournal() {
-  // 🩵 Move and fix RainbowKit modal
+  // 🩵 Fix RainbowKit modal z-index and click/tap layers
   useEffect(() => {
     const fixModal = () => {
       const modal = document.querySelector('[data-rk]');
@@ -16,9 +16,6 @@ export default function ReserveJournal() {
         m.style.height = '100vh';
         m.style.zIndex = '999999';
         m.style.pointerEvents = 'all';
-        m.style.display = 'flex';
-        m.style.justifyContent = 'center';
-        m.style.alignItems = 'center';
         m.style.background = 'rgba(0,0,0,0.45)';
         m.style.backdropFilter = 'blur(6px)';
       }
@@ -29,35 +26,23 @@ export default function ReserveJournal() {
     return () => obs.disconnect();
   }, []);
 
-  // 🩵 Neutralize Shopify sections + remove chat bubble
+  // 🩵 Neutralize Shopify & Tidio layers so modal can receive clicks
   useEffect(() => {
-    // Remove chat bubble (Shopify Inbox, Tidio, Gorgias, etc.)
-    const chatSelectors = [
-      '[id*="shopify-chat"]',
-      '[id*="tidio-chat"]',
-      '[id*="gorgias-chat"]',
-      '[class*="ChatBubble"]',
-      '[data-testid*="Chat"]',
-      '.chat-widget',
-      '.chat-bubble',
-      '.launcher-frame',
-      'iframe[src*="chat"]'
-    ];
-    chatSelectors.forEach(sel => {
-      document.querySelectorAll(sel).forEach(el => {
-        (el as HTMLElement).style.display = 'none';
-        (el as HTMLElement).style.pointerEvents = 'none';
+    const disableBlockers = () => {
+      // Shopify sections
+      document.querySelectorAll('.shopify-section, header, #MainContent').forEach((el) => {
+        const e = el as HTMLElement;
+        e.style.pointerEvents = 'none';
       });
-    });
 
-    // Keep Shopify containers from interfering
-    document.querySelectorAll('.shopify-section, #MainContent, header').forEach((el) => {
-      const e = el as HTMLElement;
-      e.style.transform = 'none';
-      e.style.zIndex = '1';
-      e.style.pointerEvents = 'auto';
-      e.style.overflow = 'visible';
-    });
+      // Tidio chat bubble
+      const tidio = document.querySelector('#tidio-chat, iframe[src*="tidio"]');
+      if (tidio) (tidio as HTMLElement).style.display = 'none';
+    };
+
+    disableBlockers();
+    const interval = setInterval(disableBlockers, 1000); // reapply if Shopify reloads layout
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -81,6 +66,7 @@ export default function ReserveJournal() {
           fontWeight: '700',
           marginBottom: '1rem',
           textAlign: 'center',
+          width: '100%',
         }}
       >
         ☕ Lakefront Journal Wallet Test
@@ -94,7 +80,7 @@ export default function ReserveJournal() {
           maxWidth: '340px',
         }}
       >
-        The wallet modal should now open cleanly with no overlay interference.
+        Tap <b>Connect Wallet</b> below. You should now be able to open and tap any wallet option freely.
       </p>
 
       <div
@@ -115,6 +101,13 @@ export default function ReserveJournal() {
         html,
         body {
           overflow: visible !important;
+        }
+        h1,
+        h2,
+        h3 {
+          text-align: center !important;
+          margin-left: auto !important;
+          margin-right: auto !important;
         }
       `}</style>
     </main>
