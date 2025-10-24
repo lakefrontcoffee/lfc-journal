@@ -4,9 +4,8 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useEffect } from 'react';
 
 export default function ReserveJournal() {
-  // --- Move RainbowKit modal to body + make full-screen interactive
   useEffect(() => {
-    const relocate = () => {
+    const relocateModal = () => {
       const modal = document.querySelector('[data-rk]');
       if (modal && modal.parentElement !== document.body) {
         document.body.appendChild(modal);
@@ -24,17 +23,19 @@ export default function ReserveJournal() {
         el.style.backdropFilter = 'blur(8px)';
       }
     };
-    relocate();
-    const obs = new MutationObserver(relocate);
-    obs.observe(document.body, { childList: true, subtree: true });
-    return () => obs.disconnect();
-  }, []);
 
-  // --- Disable theme overlays & chat widgets persistently
-  useEffect(() => {
-    const clearInterference = () => {
-      // Shopify sections / header / footer
-      document.querySelectorAll('header, footer, .shopify-section, #MainContent').forEach((el) => {
+    const killOverlays = () => {
+      // Kill chat widgets
+      document.querySelectorAll('iframe, #tidio-chat, .chat, .chat-widget, .shopify-chat-bubble').forEach((el) => {
+        const e = el as HTMLElement;
+        e.style.display = 'none';
+        e.style.opacity = '0';
+        e.style.pointerEvents = 'none';
+        e.style.zIndex = '-9999';
+      });
+
+      // Reset Shopify theme wrappers
+      document.querySelectorAll('header, footer, .shopify-section, #MainContent, .overlay, [role="dialog"]').forEach((el) => {
         const e = el as HTMLElement;
         e.style.pointerEvents = 'none';
         e.style.touchAction = 'none';
@@ -42,22 +43,18 @@ export default function ReserveJournal() {
         e.style.position = 'static';
         e.style.zIndex = '0';
       });
-
-      // Hide chat widgets or floating iframes (e.g., Tidio)
-      document.querySelectorAll('iframe, #tidio-chat, .chat, .chat-widget').forEach((el) => {
-        const e = el as HTMLElement;
-        const src = e.getAttribute('src') || '';
-        if (src.includes('tidio') || e.id.includes('tidio')) {
-          e.style.display = 'none';
-          e.style.opacity = '0';
-          e.style.pointerEvents = 'none';
-          e.style.zIndex = '-1';
-        }
-      });
     };
-    clearInterference();
-    const interval = setInterval(clearInterference, 1500);
-    return () => clearInterval(interval);
+
+    const observer = new MutationObserver(() => {
+      relocateModal();
+      killOverlays();
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+    relocateModal();
+    killOverlays();
+
+    return () => observer.disconnect();
   }, []);
 
   return (
@@ -77,13 +74,15 @@ export default function ReserveJournal() {
         overflow: 'hidden',
       }}
     >
-      <h1 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '1rem' }}>
+      <h1 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '1rem', textAlign: 'center' }}>
         ☕ Lakefront Journal Wallet Test
       </h1>
+
       <p style={{ marginBottom: '1.5rem', maxWidth: 340, lineHeight: 1.5 }}>
         Tap <b>Connect Wallet</b> below. You should now be able to open and tap any wallet option
         freely — especially on mobile Safari.
       </p>
+
       <div style={{ zIndex: 9999, position: 'relative' }}>
         <ConnectButton />
       </div>
@@ -101,11 +100,12 @@ export default function ReserveJournal() {
         iframe[src*='tidio'],
         #tidio-chat,
         .chat,
-        .chat-widget {
+        .chat-widget,
+        .shopify-chat-bubble {
           display: none !important;
           opacity: 0 !important;
           pointer-events: none !important;
-          z-index: -1 !important;
+          z-index: -9999 !important;
         }
       `}</style>
     </main>
