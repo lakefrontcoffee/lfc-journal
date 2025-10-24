@@ -4,34 +4,7 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useEffect } from 'react';
 
 export default function ReserveJournal() {
-  // 🧩 Step 1: Force kill Shopify + Tidio overlays that block clicks
-  useEffect(() => {
-    const fixOverlays = () => {
-      // Remove or hide Tidio chat bubbles/iframes completely
-      const tidioEls = document.querySelectorAll(
-        '#tidio-chat, iframe[src*="tidio"], div[id*="tidio-chat"]'
-      );
-      tidioEls.forEach((el) => {
-        (el as HTMLElement).style.display = 'none';
-        (el as HTMLElement).style.pointerEvents = 'none';
-      });
-
-      // Neutralize Shopify theme wrappers that block the modal
-      document.querySelectorAll('header, footer, .shopify-section, #MainContent').forEach((el) => {
-        const e = el as HTMLElement;
-        e.style.pointerEvents = 'none';
-        e.style.overflow = 'visible';
-        e.style.zIndex = '0';
-      });
-    };
-
-    // Run once + periodically reapply (Shopify re-renders sections)
-    fixOverlays();
-    const interval = setInterval(fixOverlays, 1500);
-    return () => clearInterval(interval);
-  }, []);
-
-  // 🧩 Step 2: Force the RainbowKit modal above everything
+  // 🩵 Fix RainbowKit modal z-index and full-screen touch
   useEffect(() => {
     const fixModal = () => {
       const modal = document.querySelector('[data-rk]');
@@ -44,22 +17,45 @@ export default function ReserveJournal() {
         m.style.zIndex = '999999';
         m.style.pointerEvents = 'all';
         m.style.background = 'rgba(0,0,0,0.45)';
-        m.style.backdropFilter = 'blur(6px)';
-        m.style.display = 'flex';
-        m.style.justifyContent = 'center';
-        m.style.alignItems = 'center';
+        m.style.backdropFilter = 'blur(8px)';
       }
     };
-
     fixModal();
     const obs = new MutationObserver(fixModal);
     obs.observe(document.body, { childList: true, subtree: true });
     return () => obs.disconnect();
   }, []);
 
+  // 🩵 Disable Shopify and chat overlays
+  useEffect(() => {
+    const disableBlockers = () => {
+      // Shopify containers
+      document
+        .querySelectorAll('.shopify-section, #MainContent, header')
+        .forEach((el) => {
+          const e = el as HTMLElement;
+          e.style.pointerEvents = 'none';
+          e.style.transform = 'none';
+          e.style.overflow = 'visible';
+          e.style.position = 'static';
+        });
+
+      // Chat / Help widgets
+      document
+        .querySelectorAll('#tidio-chat, iframe[src*="tidio"], .chat, .chat-widget')
+        .forEach((el) => {
+          (el as HTMLElement).style.display = 'none';
+        });
+    };
+    disableBlockers();
+    const interval = setInterval(disableBlockers, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <main
       style={{
+        width: '100vw',
         minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
@@ -69,45 +65,32 @@ export default function ReserveJournal() {
         fontFamily: 'system-ui, sans-serif',
         backgroundColor: '#fafafa',
         color: '#222',
-        padding: '3rem 1rem',
-        position: 'relative',
-        zIndex: 1,
+        padding: '4rem 1rem',
+        boxSizing: 'border-box',
+        overflow: 'hidden',
       }}
     >
-      {/* ✅ Center “Reserve Journal” title (Shopify wrapper safe) */}
-      <div
+      <h1
         style={{
-          position: 'absolute',
-          top: '1rem',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '100%',
+          fontSize: '2rem',
+          fontWeight: '700',
+          marginBottom: '1rem',
           textAlign: 'center',
-          zIndex: 2,
+          width: '100%',
         }}
       >
-        <h1
-          style={{
-            fontSize: '2rem',
-            fontWeight: '700',
-            marginBottom: '1rem',
-            textAlign: 'center',
-          }}
-        >
-          ☕ Lakefront Journal Wallet Test
-        </h1>
-      </div>
+        ☕ Lakefront Journal Wallet Test
+      </h1>
 
       <p
         style={{
-          marginTop: '5rem',
           marginBottom: '1.5rem',
           fontSize: '1rem',
           lineHeight: '1.5',
           maxWidth: '340px',
         }}
       >
-        If you can open and tap a wallet option below, everything’s fixed.
+        Tap <b>Connect Wallet</b> below. You should now be able to open and tap any wallet option freely.
       </p>
 
       <div
@@ -121,24 +104,28 @@ export default function ReserveJournal() {
       </div>
 
       <style jsx global>{`
-        [data-rk] {
-          touch-action: auto !important;
-          pointer-events: all !important;
-        }
         html,
         body {
           overflow: visible !important;
         }
-        #tidio-chat,
-        iframe[src*='tidio'] {
-          display: none !important;
-          pointer-events: none !important;
+        #MainContent {
+          max-width: none !important;
+          padding: 0 !important;
+        }
+        .shopify-section {
+          width: 100% !important;
+          max-width: none !important;
+        }
+        [data-rk] {
+          touch-action: auto !important;
+          pointer-events: all !important;
         }
         h1,
         h2,
         h3 {
           text-align: center !important;
-          margin: 0 auto !important;
+          margin-left: auto !important;
+          margin-right: auto !important;
         }
       `}</style>
     </main>
