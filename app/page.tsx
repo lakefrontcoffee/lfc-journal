@@ -4,7 +4,7 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useEffect } from 'react';
 
 export default function ReserveJournal() {
-  // 🩵 Fix RainbowKit modal z-index and full-screen touch
+  // 💪 Fix modal accessibility and layering
   useEffect(() => {
     const fixModal = () => {
       const modal = document.querySelector('[data-rk]');
@@ -26,29 +26,43 @@ export default function ReserveJournal() {
     return () => obs.disconnect();
   }, []);
 
-  // 🩵 Disable Shopify and chat overlays
+  // 💪 Shopify + Chat widget override (persistent)
   useEffect(() => {
-    const disableBlockers = () => {
-      // Shopify containers
-      document
-        .querySelectorAll('.shopify-section, #MainContent, header')
-        .forEach((el) => {
-          const e = el as HTMLElement;
-          e.style.pointerEvents = 'none';
-          e.style.transform = 'none';
-          e.style.overflow = 'visible';
-          e.style.position = 'static';
-        });
+    const nukeOverlays = () => {
+      // 1️⃣ Shopify layout containers
+      document.querySelectorAll('.shopify-section, #MainContent, header').forEach((el) => {
+        const e = el as HTMLElement;
+        e.style.maxWidth = 'none';
+        e.style.width = '100%';
+        e.style.pointerEvents = 'none';
+        e.style.position = 'static';
+        e.style.overflow = 'visible';
+      });
 
-      // Chat / Help widgets
-      document
-        .querySelectorAll('#tidio-chat, iframe[src*="tidio"], .chat, .chat-widget')
-        .forEach((el) => {
-          (el as HTMLElement).style.display = 'none';
-        });
+      // 2️⃣ Hide Tidio chat + floating widgets + iframes
+      document.querySelectorAll('iframe, #tidio-chat, .tidio-chat, .chat, .chat-widget').forEach((el) => {
+        const e = el as HTMLElement;
+        const src = e.getAttribute('src') || '';
+        if (src.includes('tidio') || e.id.includes('tidio')) {
+          e.style.display = 'none';
+          e.style.opacity = '0';
+          e.style.pointerEvents = 'none';
+          e.style.zIndex = '-1';
+        }
+      });
+
+      // 3️⃣ Center all Shopify H1 titles
+      document.querySelectorAll('h1').forEach((el) => {
+        const e = el as HTMLElement;
+        e.style.textAlign = 'center';
+        e.style.width = '100%';
+        e.style.margin = '0 auto 1rem auto';
+      });
     };
-    disableBlockers();
-    const interval = setInterval(disableBlockers, 1000);
+
+    // Run immediately and repeat to catch Shopify/Tidio re-injects
+    nukeOverlays();
+    const interval = setInterval(nukeOverlays, 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -119,6 +133,15 @@ export default function ReserveJournal() {
         [data-rk] {
           touch-action: auto !important;
           pointer-events: all !important;
+        }
+        iframe[src*='tidio'],
+        #tidio-chat,
+        .chat,
+        .chat-widget {
+          display: none !important;
+          opacity: 0 !important;
+          pointer-events: none !important;
+          z-index: -1 !important;
         }
         h1,
         h2,
