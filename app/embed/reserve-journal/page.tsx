@@ -9,16 +9,17 @@ export default function ReserveJournalEmbed() {
     <div
       style={{
         position: 'relative',
-        overflow: 'visible',
         height: '100vh',
         width: '100%',
+        overflow: 'hidden',
         backgroundColor: '#fff',
-        zIndex: 1,
-        WebkitOverflowScrolling: 'touch',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         flexDirection: 'column',
+        WebkitOverflowScrolling: 'touch',
+        zIndex: 0,
+        touchAction: 'manipulation',
       }}
     >
       <WagmiConfig config={config}>
@@ -30,47 +31,37 @@ export default function ReserveJournalEmbed() {
               flexDirection: 'column',
               justifyContent: 'center',
               alignItems: 'center',
-              width: '100%',
-              maxWidth: 480,
-              padding: '2rem 1rem',
               textAlign: 'center',
-              fontFamily: 'system-ui, sans-serif',
-              color: '#333',
-              backgroundColor: '#fff',
-              borderRadius: '12px',
-              boxShadow: '0 4px 10px rgba(0, 0, 0, 0.05)',
-              zIndex: 2,
+              maxWidth: 480,
+              width: '90%',
+              padding: '2rem 1rem',
+              zIndex: 10,
+              pointerEvents: 'auto',
             }}
           >
             <h1
               style={{
                 fontSize: '1.75rem',
-                fontWeight: 700,
+                fontWeight: 600,
                 marginBottom: '1rem',
               }}
             >
               ☕ Lakefront Journal Wallet Test
             </h1>
-            <p
-              style={{
-                marginBottom: '1.5rem',
-                maxWidth: 340,
-                lineHeight: 1.5,
-                fontSize: '1rem',
-                color: '#555',
-              }}
-            >
-              Tap <strong>Connect Wallet</strong> below. You should be able to open the
-              modal and tap any wallet option.
+            <p style={{ marginBottom: '1.5rem', color: '#333' }}>
+              Tap <strong>Connect Wallet</strong> below. You should be able to
+              open the modal and tap any wallet option.
             </p>
 
+            {/* ✅ Critical fix for mobile tap handling */}
             <div
               style={{
                 zIndex: 9999,
-                position: 'relative',
+                pointerEvents: 'auto',
+                transform: 'translateZ(0)',
               }}
             >
-              <ConnectButton />
+              <ConnectButton showBalance={false} chainStatus="icon" />
             </div>
           </main>
         </RainbowKitProvider>
