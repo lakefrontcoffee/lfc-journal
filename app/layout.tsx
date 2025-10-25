@@ -1,19 +1,21 @@
-import './globals.css';
-import { ReactNode } from 'react';
-import Providers from '@/components/Providers';
-
 export const metadata = {
   title: 'Lakefront Journal',
-  description: 'Your Lakefront Reserve hub',
+  description: 'Lakefront Coffee Journal and Reserve Experience',
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>
-        <Providers>
-          {children}
-        </Providers>
+      <body
+        style={{
+          margin: 0,
+          padding: 0,
+          overflowX: 'hidden',
+          WebkitOverflowScrolling: 'touch',
+          backgroundColor: '#fff',
+        }}
+      >
+        {children}
       </body>
     </html>
   );
