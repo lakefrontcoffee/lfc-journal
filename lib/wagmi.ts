@@ -7,7 +7,6 @@ import {
   rainbowWallet,
   walletConnectWallet,
   coinbaseWallet,
-  createWallet,
 } from '@rainbow-me/rainbowkit/wallets';
 import { base } from 'viem/chains';
 
@@ -15,25 +14,24 @@ import { base } from 'viem/chains';
 const projectId = 'c2182e61-2577-4ec1-b86b-c7c37d04d58b';
 const appName = 'Lakefront Journal';
 
-// ✅ Define wallet creator functions (new RainbowKit API)
-const walletGroups = [
+// ✅ Define wallet list (RainbowKit v1.4 style)
+const connectors = connectorsForWallets(
+  [
+    {
+      groupName: 'Recommended',
+      wallets: [
+        metaMaskWallet({ projectId, chains: [base] }),
+        rainbowWallet({ projectId, chains: [base] }),
+        walletConnectWallet({ projectId, chains: [base] }),
+        coinbaseWallet({ appName, chains: [base] }),
+      ],
+    },
+  ],
   {
-    groupName: 'Recommended',
-    wallets: [
-      metaMaskWallet,        // no direct invocation
-      rainbowWallet,
-      walletConnectWallet,
-      coinbaseWallet,
-    ],
-  },
-];
-
-// ✅ Generate connectors (RainbowKit v1.4+)
-const connectors = connectorsForWallets(walletGroups, {
-  appName,
-  projectId,
-  chains: [base],
-});
+    appName,
+    projectId,
+  }
+);
 
 // ✅ wagmi config
 export const config = createConfig({
