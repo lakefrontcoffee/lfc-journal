@@ -12,12 +12,12 @@ import {
 } from '@rainbow-me/rainbowkit/wallets';
 import { base } from 'viem/chains';
 
-// ✅ Your WalletConnect v2 Project ID
+// ✅ Your WalletConnect Cloud Project ID
 const projectId = 'c2182e61-2577-4ec1-b86b-c7c37d04d58b';
 const appName = 'Lakefront Journal';
 
-// 👇 Explicit mobile-ready wallet connectors
-const connectors = connectorsForWallets([
+// 👇 Define wallet groups explicitly
+const walletGroups = [
   {
     groupName: 'Recommended',
     wallets: [
@@ -26,7 +26,6 @@ const connectors = connectorsForWallets([
         projectId,
         chains: [base],
         mobile: {
-          // fixes deep link open on iOS + Android
           getUri: (uri: string) => `rainbow://wc?uri=${encodeURIComponent(uri)}`,
         },
       }),
@@ -34,14 +33,19 @@ const connectors = connectorsForWallets([
         projectId,
         chains: [base],
         mobile: {
-          // fallback URI pattern for WalletConnect v2
           getUri: (uri: string) => `wc://wc?uri=${encodeURIComponent(uri)}`,
         },
       }),
       coinbaseWallet({ appName, chains: [base] }),
     ],
   },
-]);
+];
+
+// ✅ The new version of connectorsForWallets expects 2 args
+const connectors = connectorsForWallets(walletGroups, {
+  projectId,
+  appName,
+});
 
 export const config = createConfig({
   chains: [base],
