@@ -2,108 +2,124 @@
 
 import { useEffect, useState } from 'react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount } from 'wagmi';
+import { useAccount, useReadContract } from 'wagmi';
+import { formatEther } from 'viem';
+import Image from 'next/image';
 import Link from 'next/link';
-import { ethers } from 'ethers';
 
-export const revalidate = false; // ✅ FIXED: must be number or false
+// ✅ Fix for Next.js build error
+export const revalidate = false;
+
+// Contract addresses on Base
+const BEANS_TOKEN = '0x9D1FeFc037123154A8f4f51CB9fFBad18b67FeF6';
+const JOURNAL_NFT = '0xecd5e9df0f54f20949fc0eee74ada117074e0c0d';
+const ERC20_ABI = [
+  { name: 'balanceOf', type: 'function', stateMutability: 'view', inputs: [{ name: 'owner', type: 'address' }], outputs: [{ name: '', type: 'uint256' }] }
+];
+const ERC721_ABI = [
+  { name: 'balanceOf', type: 'function', stateMutability: 'view', inputs: [{ name: 'owner', type: 'address' }], outputs: [{ name: '', type: 'uint256' }] }
+];
 
 export default function ReserveJournalPage() {
   const { address, isConnected } = useAccount();
   const [beansBalance, setBeansBalance] = useState<string | null>(null);
-  const [ownsJournal, setOwnsJournal] = useState<boolean | null>(null);
+  const [journalBalance, setJournalBalance] = useState<string | null>(null);
 
-  const BEANS_TOKEN = '0x9D1FeFc037123154A8f4f51CB9fFBad18b67FeF6';
-  const JOURNAL_CONTRACT = '0xecd5e9df0f54f20949fc0eee74ada117074e0c0d';
+  // Read token balances using wagmi
+  const { data: beans } = useReadContract({
+    address: BEANS_TOKEN,
+    abi: ERC20_ABI,
+    functionName: 'balanceOf',
+    args: address ? [address] : undefined,
+    query: { enabled: !!address },
+  });
 
-  // ABI fragments
-  const erc20ABI = [
-    'function balanceOf(address owner) view returns (uint256)',
-    'function decimals() view returns (uint8)',
-  ];
-  const nftABI = ['function balanceOf(address owner) view returns (uint256)'];
+  const { data: journals } = useReadContract({
+    address: JOURNAL_NFT,
+    abi: ERC721_ABI,
+    functionName: 'balanceOf',
+    args: address ? [address] : undefined,
+    query: { enabled: !!address },
+  });
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!isConnected || !address) return;
-
-      try {
-        const provider = new ethers.JsonRpcProvider('https://mainnet.base.org');
-
-        // Fetch $BEANS balance
-        const beans = new ethers.Contract(BEANS_TOKEN, erc20ABI, provider);
-        const balance = await beans.balanceOf(address);
-        const decimals = await beans.decimals();
-        const formattedBalance = ethers.formatUnits(balance, decimals);
-        setBeansBalance(parseFloat(formattedBalance).toFixed(2));
-
-        // Check for Journal ownership
-        const journal = new ethers.Contract(JOURNAL_CONTRACT, nftABI, provider);
-        const journalCount = await journal.balanceOf(address);
-        setOwnsJournal(journalCount > 0);
-      } catch (err) {
-        console.error('Error fetching balances:', err);
-      }
-    };
-
-    fetchData();
-  }, [isConnected, address]);
+    if (beans) setBeansBalance(formatEther(beans as bigint));
+    if (journals) setJournalBalance((journals as bigint).toString());
+  }, [beans, journals]);
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen bg-[#faf8f5] px-4 py-8">
-      <h1 className="text-2xl font-semibold mb-6 text-[#2c2a29] text-center">
-        Lakefront Reserve Access
-      </h1>
+    <main
+      style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(180deg, #0b0d0f 0%, #1c1f22 100%)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'column',
+        color: 'white',
+        fontFamily: 'Inter, sans-serif',
+        textAlign: 'center',
+        padding: '2rem',
+      }}
+    >
+      <h1 style={{ fontSize: '1.8rem', marginBottom: '1rem' }}>Lakefront Reserve Journal</h1>
 
-      {/* Wallet Connect */}
-      <div className="mb-6">
+      <div style={{ marginBottom: '2rem' }}>
         <ConnectButton />
       </div>
 
-      {/* Wallet Status */}
       {isConnected && (
-        <div className="flex flex-col items-center gap-2 mb-6">
-          <p className="text-lg">
+        <div style={{ marginBottom: '2rem', lineHeight: '1.8' }}>
+          <p>
             <strong>$BEANS:</strong>{' '}
-            {beansBalance !== null ? beansBalance : 'Loading...'}
+            {beansBalance !== null ? `${Number(beansBalance).toFixed(2)} BEANS` : 'Loading...'}
           </p>
-          <p className="text-lg">
-            <strong>Journal:</strong>{' '}
-            {ownsJournal === null
-              ? 'Checking...'
-              : ownsJournal
-              ? '✅ Owned'
-              : '❌ Not Owned'}
+          <p>
+            <strong>Journals Held:</strong>{' '}
+            {journalBalance !== null ? journalBalance : 'Loading...'}
           </p>
         </div>
       )}
 
-      {/* Buttons */}
-      {isConnected && ownsJournal !== null && (
-        <div className="flex flex-col items-center gap-4 mt-4">
-          {ownsJournal ? (
-            <Link
-              href="/reserve"
-              className="bg-[#2c2a29] text-white px-6 py-3 rounded-lg hover:bg-[#3c3a39] transition-all"
+      {isConnected ? (
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <Link href="/reserve">
+            <button
+              style={{
+                padding: '0.75rem 1.5rem',
+                backgroundColor: '#d4af37',
+                color: '#0b0d0f',
+                borderRadius: '12px',
+                fontWeight: 600,
+                border: 'none',
+                cursor: 'pointer',
+              }}
             >
               Enter Reserve
-            </Link>
-          ) : (
-            <Link
-              href="https://lakefrontcoffee.com/pages/reserve"
-              target="_blank"
-              className="border border-[#2c2a29] text-[#2c2a29] px-6 py-3 rounded-lg hover:bg-[#2c2a29] hover:text-white transition-all"
+            </button>
+          </Link>
+
+          <Link href="/join">
+            <button
+              style={{
+                padding: '0.75rem 1.5rem',
+                backgroundColor: 'transparent',
+                color: '#fff',
+                border: '2px solid #d4af37',
+                borderRadius: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
             >
               Join Lakefront Reserve
-            </Link>
-          )}
+            </button>
+          </Link>
         </div>
+      ) : (
+        <p style={{ marginTop: '2rem', opacity: 0.8 }}>
+          Connect your wallet to view your Reserve status.
+        </p>
       )}
-
-      {/* Footer */}
-      <footer className="mt-10 text-sm text-gray-500">
-        Connected to Base • Powered by Crossmint & Lakefront Coffee
-      </footer>
     </main>
   );
 }
