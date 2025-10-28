@@ -3,7 +3,9 @@ export const metadata = {
   description: 'Lakefront Coffee Journal and Reserve Experience',
 };
 
-export default function RootLayout({ children }) {
+import type { ReactNode } from 'react';
+
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body
