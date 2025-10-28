@@ -1,6 +1,5 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import { WagmiConfig } from 'wagmi';
 import { RainbowKitProvider, ConnectButton } from '@rainbow-me/rainbowkit';
 import { config } from '@/lib/wagmi';
@@ -56,4 +55,3 @@ export default function ReserveJournalEmbed() {
     </WagmiConfig>
   );
 }
-
