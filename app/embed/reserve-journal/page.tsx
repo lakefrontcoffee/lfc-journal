@@ -1,13 +1,13 @@
 'use client'
 
+export const dynamic = 'force-dynamic' // ✅ disables static rendering & revalidate issues
+export const revalidate = false        // ✅ fully disables ISR cache
+
 import { useEffect, useState } from 'react'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useAccount, useReadContract } from 'wagmi'
 import { formatEther } from 'viem'
 import Link from 'next/link'
-
-// ✅ 100 % safe: no object, just boolean
-export const revalidate = 0
 
 const BEANS_TOKEN = '0x9D1FeFc037123154A8f4f51CB9fFBad18b67FeF6'
 const JOURNAL_NFT = '0xecd5e9df0f54f20949fc0eee74ada117074e0c0d'
