@@ -2,41 +2,52 @@
 
 import { http, createConfig } from 'wagmi';
 import {
-  getDefaultWallets,
-  RainbowKitSiweNextAuthProvider,
+  connectorsForWallets,
 } from '@rainbow-me/rainbowkit';
+import {
+  metaMaskWallet,
+  rainbowWallet,
+  walletConnectWallet,
+  coinbaseWallet,
+} from '@rainbow-me/rainbowkit/wallets';
 import { base } from 'viem/chains';
 
-// 👇 Wallet setup — explicitly include all options
-import {
-  coinbaseWallet,
-  metaMaskWallet,
-  walletConnectWallet,
-  rainbowWallet,
-} from '@rainbow-me/rainbowkit/wallets';
-
-// 1️⃣ Project metadata
-const projectId = 'lakefront-journal-connect'; // any string for WalletConnect v2
+// ✅ Your WalletConnect v2 Project ID
+const projectId = 'c2182e61-2577-4ec1-b86b-c7c37d04d58b';
 const appName = 'Lakefront Journal';
 
-// 2️⃣ Configure supported wallets
-const { wallets } = getDefaultWallets({
-  appName,
-  projectId,
-});
+// 👇 Explicit mobile-ready wallet connectors
+const connectors = connectorsForWallets([
+  {
+    groupName: 'Recommended',
+    wallets: [
+      metaMaskWallet({ projectId, chains: [base] }),
+      rainbowWallet({
+        projectId,
+        chains: [base],
+        mobile: {
+          // fixes deep link open on iOS + Android
+          getUri: (uri: string) => `rainbow://wc?uri=${encodeURIComponent(uri)}`,
+        },
+      }),
+      walletConnectWallet({
+        projectId,
+        chains: [base],
+        mobile: {
+          // fallback URI pattern for WalletConnect v2
+          getUri: (uri: string) => `wc://wc?uri=${encodeURIComponent(uri)}`,
+        },
+      }),
+      coinbaseWallet({ appName, chains: [base] }),
+    ],
+  },
+]);
 
-// 3️⃣ Create wagmi config
 export const config = createConfig({
   chains: [base],
   transports: {
     [base.id]: http(),
   },
-  multiInjectedProviderDiscovery: true,
+  connectors,
   ssr: false,
-  connectors: [
-    metaMaskWallet({ projectId, chains: [base] }),
-    rainbowWallet({ projectId, chains: [base] }),
-    walletConnectWallet({ projectId, chains: [base] }),
-    coinbaseWallet({ appName, chains: [base] }),
-  ],
 });
