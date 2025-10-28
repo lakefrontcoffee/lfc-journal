@@ -1,7 +1,7 @@
 'use client';
 
 import { http, createConfig } from 'wagmi';
-import { connectorsForWallets, WalletOptions } from '@rainbow-me/rainbowkit';
+import { connectorsForWallets } from '@rainbow-me/rainbowkit';
 import {
   metaMaskWallet,
   rainbowWallet,
@@ -14,20 +14,23 @@ import { base } from 'viem/chains';
 const projectId = 'c2182e61-2577-4ec1-b86b-c7c37d04d58b';
 const appName = 'Lakefront Journal';
 
-// ✅ Define wallet groups with explicit WalletOptions typing
+// 🧩 Define a loose local type for opts
+type WalletOpts = Record<string, unknown>;
+
+// ✅ Define wallet groups with explicit type
 const walletGroups = [
   {
     groupName: 'Recommended',
     wallets: [
-      (opts: WalletOptions) => metaMaskWallet({ ...opts, projectId }),
-      (opts: WalletOptions) => rainbowWallet({ ...opts, projectId }),
-      (opts: WalletOptions) => walletConnectWallet({ ...opts, projectId }),
-      (opts: WalletOptions) => coinbaseWallet({ ...opts, appName }),
+      (opts: WalletOpts) => metaMaskWallet({ ...opts, projectId }),
+      (opts: WalletOpts) => rainbowWallet({ ...opts, projectId }),
+      (opts: WalletOpts) => walletConnectWallet({ ...opts, projectId }),
+      (opts: WalletOpts) => coinbaseWallet({ ...opts, appName }),
     ],
   },
 ];
 
-// ✅ connectorsForWallets now expects (groups, options)
+// ✅ connectorsForWallets signature → (groups, options)
 const connectors = connectorsForWallets(walletGroups, {
   appName,
   projectId,
