@@ -3,7 +3,6 @@
 import { WagmiConfig } from 'wagmi';
 import { RainbowKitProvider, ConnectButton } from '@rainbow-me/rainbowkit';
 import { config } from '@/lib/wagmi';
-import { base } from 'viem/chains';
 
 // Disable SSR/prerender — ensures this only runs client-side
 export const dynamic = 'force-dynamic';
@@ -12,7 +11,7 @@ export const revalidate = 0;
 export default function ReserveJournalEmbed() {
   return (
     <WagmiConfig config={config}>
-      <RainbowKitProvider chains={[base]}>
+      <RainbowKitProvider>
         <main
           style={{
             minHeight: '100vh',
