@@ -1,68 +1,79 @@
-'use client';
+'use client'
 
-import { useEffect, useState } from 'react';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount, useReadContract } from 'wagmi';
-import { formatEther } from 'viem';
-import Image from 'next/image';
-import Link from 'next/link';
+import { useEffect, useState } from 'react'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
+import { useAccount, useReadContract } from 'wagmi'
+import { formatEther } from 'viem'
+import Link from 'next/link'
 
-// ✅ Fix for Next.js build error
-export const revalidate = false;
+// ✅ 100 % safe: no object, just boolean
+export const revalidate = 0
 
-// Contract addresses on Base
-const BEANS_TOKEN = '0x9D1FeFc037123154A8f4f51CB9fFBad18b67FeF6';
-const JOURNAL_NFT = '0xecd5e9df0f54f20949fc0eee74ada117074e0c0d';
+const BEANS_TOKEN = '0x9D1FeFc037123154A8f4f51CB9fFBad18b67FeF6'
+const JOURNAL_NFT = '0xecd5e9df0f54f20949fc0eee74ada117074e0c0d'
+
 const ERC20_ABI = [
-  { name: 'balanceOf', type: 'function', stateMutability: 'view', inputs: [{ name: 'owner', type: 'address' }], outputs: [{ name: '', type: 'uint256' }] }
-];
+  {
+    name: 'balanceOf',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [{ name: 'owner', type: 'address' }],
+    outputs: [{ name: '', type: 'uint256' }],
+  },
+]
+
 const ERC721_ABI = [
-  { name: 'balanceOf', type: 'function', stateMutability: 'view', inputs: [{ name: 'owner', type: 'address' }], outputs: [{ name: '', type: 'uint256' }] }
-];
+  {
+    name: 'balanceOf',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [{ name: 'owner', type: 'address' }],
+    outputs: [{ name: '', type: 'uint256' }],
+  },
+]
 
 export default function ReserveJournalPage() {
-  const { address, isConnected } = useAccount();
-  const [beansBalance, setBeansBalance] = useState<string | null>(null);
-  const [journalBalance, setJournalBalance] = useState<string | null>(null);
+  const { address, isConnected } = useAccount()
+  const [beansBalance, setBeansBalance] = useState<string | null>(null)
+  const [journalBalance, setJournalBalance] = useState<string | null>(null)
 
-  // Read token balances using wagmi
   const { data: beans } = useReadContract({
     address: BEANS_TOKEN,
     abi: ERC20_ABI,
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
-    query: { enabled: !!address },
-  });
+  })
 
   const { data: journals } = useReadContract({
     address: JOURNAL_NFT,
     abi: ERC721_ABI,
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
-    query: { enabled: !!address },
-  });
+  })
 
   useEffect(() => {
-    if (beans) setBeansBalance(formatEther(beans as bigint));
-    if (journals) setJournalBalance((journals as bigint).toString());
-  }, [beans, journals]);
+    if (beans) setBeansBalance(formatEther(beans as bigint))
+    if (journals) setJournalBalance((journals as bigint).toString())
+  }, [beans, journals])
 
   return (
     <main
       style={{
         minHeight: '100vh',
-        background: 'linear-gradient(180deg, #0b0d0f 0%, #1c1f22 100%)',
+        background: 'linear-gradient(180deg,#0b0d0f 0%,#1c1f22 100%)',
         display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
         flexDirection: 'column',
-        color: 'white',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#fff',
         fontFamily: 'Inter, sans-serif',
         textAlign: 'center',
         padding: '2rem',
       }}
     >
-      <h1 style={{ fontSize: '1.8rem', marginBottom: '1rem' }}>Lakefront Reserve Journal</h1>
+      <h1 style={{ fontSize: '1.8rem', marginBottom: '1rem' }}>
+        Lakefront Reserve Journal
+      </h1>
 
       <div style={{ marginBottom: '2rem' }}>
         <ConnectButton />
@@ -72,7 +83,9 @@ export default function ReserveJournalPage() {
         <div style={{ marginBottom: '2rem', lineHeight: '1.8' }}>
           <p>
             <strong>$BEANS:</strong>{' '}
-            {beansBalance !== null ? `${Number(beansBalance).toFixed(2)} BEANS` : 'Loading...'}
+            {beansBalance !== null
+              ? `${Number(beansBalance).toFixed(2)} BEANS`
+              : 'Loading...'}
           </p>
           <p>
             <strong>Journals Held:</strong>{' '}
@@ -121,5 +134,5 @@ export default function ReserveJournalPage() {
         </p>
       )}
     </main>
-  );
+  )
 }
