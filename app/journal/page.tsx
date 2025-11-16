@@ -6,8 +6,9 @@ export const revalidate = 0; // or: false
 export const fetchCache = 'default-no-store';
 
 import * as React from 'react';
+import Link from 'next/link';
 
-export default function ReserveJournalEmbed() {
+export default function JournalPage() {
   return (
     <main
       style={{
@@ -21,25 +22,47 @@ export default function ReserveJournalEmbed() {
       }}
     >
       <div style={{ maxWidth: 880, width: '100%' }}>
-        <h1 style={{ fontSize: 28, marginBottom: 8 }}>
-          Lakefront Reserve — Journal Embed
-        </h1>
-        <p style={{ opacity: 0.85, marginBottom: 24 }}>
-          This route renders dynamically (no static export). If you embed widgets or fetch,
-          keep them client-side to avoid prerender issues.
+        <h1 style={{ fontSize: 32, marginBottom: 12 }}>Lakefront Journal</h1>
+        <p style={{ opacity: 0.85, marginBottom: 20 }}>
+          Dynamic page (no static export, no ISR). Safe to use client-only logic, local state,
+          and fetches with <code>cache: 'no-store'</code>.
         </p>
 
-        {/* Your actual embed/widget/component can live here */}
-        <div
+        <section
           style={{
             border: '1px solid rgba(255,255,255,0.12)',
             borderRadius: 12,
             padding: 16,
+            marginBottom: 16,
           }}
         >
-          <p style={{ margin: 0 }}>
-            Placeholder: add your embed component here.
+          <h2 style={{ fontSize: 20, marginBottom: 8 }}>Today’s Entry</h2>
+          <p style={{ marginTop: 0 }}>
+            Start designing your journaling UI here—inputs, prompts, save buttons, etc.
           </p>
+        </section>
+
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <Link
+            href="/"
+            style={{
+              padding: '10px 14px',
+              borderRadius: 10,
+              border: '1px solid rgba(255,255,255,0.12)',
+            }}
+          >
+            Home
+          </Link>
+          <Link
+            href="/embed/reserve-journal"
+            style={{
+              padding: '10px 14px',
+              borderRadius: 10,
+              border: '1px solid rgba(255,255,255,0.12)',
+            }}
+          >
+            Open Embed
+          </Link>
         </div>
       </div>
     </main>
