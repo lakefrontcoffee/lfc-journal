@@ -1,24 +1,16 @@
-export const metadata = {
-  title: 'Lakefront Journal',
-  description: 'Lakefront Coffee Journal and Reserve Experience',
-};
+// app/layout.tsx
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;               // number, not an object
+export const fetchCache = 'default-no-store';
 
-import type { ReactNode } from 'react';
-
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
-      <body
-        style={{
-          margin: 0,
-          padding: 0,
-          overflowX: 'hidden',
-          WebkitOverflowScrolling: 'touch',
-          backgroundColor: '#fff',
-        }}
-      >
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
