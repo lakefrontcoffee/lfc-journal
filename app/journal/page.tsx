@@ -1,79 +1,47 @@
 'use client';
 
+// ✅ Force runtime rendering; never prerender this route
 export const dynamic = 'force-dynamic';
-export const revalidate = false as const; // disable ISR entirely
-export const fetchCache = 'default-no-store'; // prevent caching
-import styles from './journal.module.css';
-import Link from 'next/link';
+export const revalidate = 0; // or: false
+export const fetchCache = 'default-no-store';
 
-export default function JournalPage() {
+import * as React from 'react';
+
+export default function ReserveJournalEmbed() {
   return (
-    <main className={styles.container}>
-      <header className={styles.header}>
-        <h1>Lakefront Journal</h1>
-        <p className={styles.meta}>Daily reflections, rituals & roasts ☕</p>
-      </header>
+    <main
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 24,
+        background: '#0b0b0c',
+        color: '#f6f6f6',
+      }}
+    >
+      <div style={{ maxWidth: 880, width: '100%' }}>
+        <h1 style={{ fontSize: 28, marginBottom: 8 }}>
+          Lakefront Reserve — Journal Embed
+        </h1>
+        <p style={{ opacity: 0.85, marginBottom: 24 }}>
+          This route renders dynamically (no static export). If you embed widgets or fetch,
+          keep them client-side to avoid prerender issues.
+        </p>
 
-      <section className={styles.grid}>
-        <form className={styles.card}>
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="date">Date</label>
-            <input className={styles.input} id="date" type="date" />
-          </div>
-
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="brew">Coffee / Tea</label>
-            <input
-              className={styles.input}
-              id="brew"
-              placeholder="E.g., Ethiopia natural pour-over"
-            />
-          </div>
-
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="mood">Current mood</label>
-            <input
-              className={styles.input}
-              id="mood"
-              placeholder="Grateful, focused, energized…"
-            />
-          </div>
-
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="prompt">Today’s reflection</label>
-            <textarea
-              className={styles.textarea}
-              id="prompt"
-              rows={6}
-              placeholder="What am I working toward today? What would make today great?"
-            />
-          </div>
-
-          <button className={styles.button} type="button">
-            Save (local for now)
-          </button>
-
-          <p className={styles.hint}>
-            Token-gated & on-chain saving will be added later. For now this page is
-            fully usable under your domain.
+        {/* Your actual embed/widget/component can live here */}
+        <div
+          style={{
+            border: '1px solid rgba(255,255,255,0.12)',
+            borderRadius: 12,
+            padding: 16,
+          }}
+        >
+          <p style={{ margin: 0 }}>
+            Placeholder: add your embed component here.
           </p>
-        </form>
-
-        <aside className={styles.card}>
-          <h3 className={styles.asideTitle}>Quick links</h3>
-          <ul className={styles.links}>
-            <li><Link href="/">Home</Link></li>
-            <li><Link href="/embed/reserve-journal">Reserve (embed)</Link></li>
-          </ul>
-
-          <h3 className={styles.asideTitle}>Suggestions</h3>
-          <ul className={styles.bullets}>
-            <li>Note aroma, acidity, body, finish.</li>
-            <li>Write 1 micro-goal for the day.</li>
-            <li>End with 1 gratitude line.</li>
-          </ul>
-        </aside>
-      </section>
+        </div>
+      </div>
     </main>
   );
 }
