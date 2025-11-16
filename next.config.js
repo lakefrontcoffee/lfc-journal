@@ -1,14 +1,11 @@
-/** @type {import('next').NextConfig} */
+// next.config.mjs (or next.config.js)
 const nextConfig = {
+  // ❌ remove: output: 'export'
+  // You can keep any other settings you had here
   reactStrictMode: true,
-  webpack: (config) => {
-    config.resolve.fallback = {
-      ...(config.resolve.fallback || {}),
-      encoding: false,
-      'pino-pretty': false,
-    };
-    return config;
+  experimental: {
+    // keep any experimental flags you already use
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;
