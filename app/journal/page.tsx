@@ -1,3 +1,8 @@
+'use client';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = false as const; // disable ISR entirely
+export const fetchCache = 'default-no-store'; // prevent caching
 import styles from './journal.module.css';
 import Link from 'next/link';
 
